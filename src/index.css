@@ -1,0 +1,59 @@
+:root {
+  /* Цветовая палитра из референса */
+  --bg-main: #F3F4F6;
+  /* Светло-серый фон приложения */
+  --bg-header: #131313;
+  /* Темный фон хедера и блока поиска */
+  --bg-card-dark: #1E1E1E;
+
+  /* Пастельные цвета для карточек вакансий */
+  --card-orange: #FFE8D6;
+  --card-mint: #E0F7FA;
+  --card-purple: #E1BEE7;
+  --card-blue: #E3F2FD;
+
+  /* Текст */
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B7280;
+  --text-light: #FFFFFF;
+  --text-muted: #9CA3AF;
+
+  /* Акценты */
+  --accent-blue: #3B82F6;
+  /* Синяя кнопка Learn more и ползунки */
+
+  /* Формы и скругления */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  /* Для больших темных блоков */
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
