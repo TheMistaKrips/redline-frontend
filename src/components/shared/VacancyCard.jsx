@@ -13,142 +13,109 @@ export default function VacancyCard({ vacancy }) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             style={{
-                backgroundColor: vacancy.bgColor,
+                backgroundColor: '#FFFFFF',
                 borderRadius: '24px',
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
-                boxShadow: isHovered ? '0 12px 24px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.2s ease',
+                transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+                boxShadow: isHovered ? '0 12px 24px rgba(165, 12, 32, 0.15)' : '0 4px 12px rgba(0,0,0,0.05)',
+                border: '1px solid #E5E7EB',
                 cursor: 'pointer',
-                minHeight: '300px'
+                minHeight: '280px'
             }}
         >
             {/* Верхний ряд: Дата и Закладка */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{
-                    backgroundColor: 'rgba(255,255,255,0.6)',
+                    backgroundColor: '#FFF5F5',
                     padding: '6px 14px',
                     borderRadius: '20px',
                     fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#131313'
+                    fontWeight: 800,
+                    color: '#A50C20',
+                    border: '1px solid #FCA5A5'
                 }}>
                     {vacancy.date}
                 </div>
                 <button
                     onClick={(e) => {
-                        e.stopPropagation(); // Предотвращаем переход на страницу при клике на закладку
+                        e.stopPropagation();
                         setIsBookmarked(!isBookmarked);
                     }}
                     style={{
-                        width: '36px',
-                        height: '36px',
-                        backgroundColor: 'rgba(255,255,255,0.6)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#131313',
-                        transition: 'all 0.2s',
-                        transform: isBookmarked ? 'scale(1.1)' : 'scale(1)',
-                        border: 'none',
-                        cursor: 'pointer'
+                        background: 'none', border: 'none', cursor: 'pointer', color: '#000000',
+                        transition: 'transform 0.2s', transform: isBookmarked ? 'scale(1.1)' : 'scale(1)',
+                        padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}
                 >
-                    <Bookmark size={18} fill={isBookmarked ? '#131313' : 'none'} />
+                    <Bookmark size={20} fill={isBookmarked ? '#A50C20' : 'none'} color={isBookmarked ? '#A50C20' : '#000000'} />
                 </button>
             </div>
 
             {/* Заголовок и Логотип */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <div style={{ fontSize: '13px', color: '#555', marginBottom: '8px', fontWeight: 600 }}>
-                        {vacancy.company}
+                    <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', fontWeight: 700 }}>
+                        {vacancy.company} • {vacancy.category}
                     </div>
-                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#131313', lineHeight: '1.2', margin: 0 }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#000000', lineHeight: '1.2', margin: 0 }}>
                         {vacancy.title}
                     </h3>
                 </div>
                 <div style={{
-                    width: '36px',
-                    height: '36px',
-                    backgroundColor: '#131313',
-                    color: '#FFF',
-                    flexShrink: 0,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '16px'
+                    width: '44px', height: '44px',
+                    backgroundColor: '#000000', color: '#FFFFFF',
+                    flexShrink: 0, borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: '900', fontSize: '20px'
                 }}>
                     {vacancy.logoText}
                 </div>
             </div>
 
-            {/* Краткое описание */}
-            <p style={{
-                fontSize: '13px',
-                color: 'rgba(0,0,0,0.6)',
-                margin: 0,
-                lineHeight: '1.5',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-            }}>
-                {vacancy.description}
-            </p>
-
-            {/* Теги */}
+            {/* Теги характеристик */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {vacancy.tags.map((tag, i) => (
-                    <span key={i} style={{
-                        border: '1px solid rgba(0,0,0,0.1)',
-                        padding: '6px 12px',
-                        borderRadius: '16px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: '#333'
-                    }}>
-                        {tag}
+                <span style={{ backgroundColor: '#F9FAFB', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#333', border: '1px solid #E5E7EB' }}>
+                    {vacancy.location}
+                </span>
+                <span style={{ backgroundColor: '#F9FAFB', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#333', border: '1px solid #E5E7EB' }}>
+                    {vacancy.experience}
+                </span>
+                {vacancy.format === 'remote' && (
+                    <span style={{ backgroundColor: '#F9FAFB', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#333', border: '1px solid #E5E7EB' }}>
+                        Удаленка
                     </span>
-                ))}
+                )}
+                {vacancy.format === 'office' && (
+                    <span style={{ backgroundColor: '#F9FAFB', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#333', border: '1px solid #E5E7EB' }}>
+                        Офис
+                    </span>
+                )}
+                {vacancy.format === 'hybrid' && (
+                    <span style={{ backgroundColor: '#F9FAFB', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#333', border: '1px solid #E5E7EB' }}>
+                        Гибрид
+                    </span>
+                )}
             </div>
 
             {/* Нижний ряд: Зарплата и Кнопка */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
-                <div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#131313' }}>
-                        {vacancy.salaryStr}
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#555', marginTop: '4px', fontWeight: 500 }}>
-                        {vacancy.location} • {vacancy.experience}
-                    </div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: '#A50C20' }}>
+                    {vacancy.salaryStr}
                 </div>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/vacancy/${vacancy.id}`);
-                    }}
-                    style={{
-                        backgroundColor: '#131313',
-                        color: '#FFF',
-                        padding: '12px 24px',
-                        borderRadius: '20px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        transition: 'background-color 0.2s',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
+                <button style={{
+                    backgroundColor: '#000000', color: '#FFFFFF',
+                    padding: '10px 20px', borderRadius: '12px',
+                    fontSize: '14px', fontWeight: 800, border: 'none',
+                    cursor: 'pointer', transition: 'background-color 0.2s'
+                }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#131313'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#000000'}
                 >
-                    Details
+                    Подробнее
                 </button>
             </div>
         </div>

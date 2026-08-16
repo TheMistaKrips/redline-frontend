@@ -1,140 +1,170 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { UploadCloud, AlertCircle, CheckCircle2, FileText, Plus } from 'lucide-react';
+import { VacancyContext } from '../../context/VacancyContext';
+import { ShieldCheck, Users, Plus, FileText, CheckCircle2, TrendingUp, Search, Eye, Edit2, Save, MapPin, Globe, Trash2, Download, Send } from 'lucide-react';
+import { mockCandidates, CATEGORIES } from '../../mocks/data';
+import { useNavigate } from 'react-router-dom';
 
 const MANDATORY_DOCS = [
-    'Устав предприятия',
-    'Свидетельство о регистрации (Шахадатнама)',
-    'Выписка из ЕГРЮЛ Туркменистана',
-    'Справка из органа статистики (коды)',
-    'Приказ о назначении директора',
-    'Договор аренды (юр. адрес)',
-    'Справка из банка о расчетном счете'
+    'Устав предприятия', 'Свидетельство о регистрации (Шахадатнама)', 'Выписка из ЕГРЮЛ',
+    'Справка из органа статистики', 'Приказ о назначении директора', 'Договор аренды', 'Справка из банка'
 ];
 
 export default function EmployerDashboard() {
-    const { user, logout } = useContext(AuthContext);
+    const { user, updateUserProfile } = useContext(AuthContext);
+    const { addVacancy } = useContext(VacancyContext);
+    const navigate = useNavigate();
+
+    const [candidates, setCandidates] = useState(mockCandidates);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedDocs, setUploadedDocs] = useState([]);
-    const [status, setStatus] = useState(user?.verificationStatus || 'pending'); // pending, checking, verified
+    const [isEditing, setIsEditing] = useState(false);
+    const [companyData, setCompanyData] = useState({
+        about: user?.about || '',
+        website: user?.socials?.[0] || '',
+        address: 'Ашхабад, Туркменистан'
+    });
 
-    if (!user) return null;
-
-    const handleUpload = (docName) => {
-        if (!uploadedDocs.includes(docName)) {
-            setUploadedDocs([...uploadedDocs, docName]);
-        }
+    // Создание вакансии
+    const handleCreateVacancy = (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const newVac = {
+            id: Date.now(),
+            date: 'Сегодня',
+            company: user.name,
+            title: formData.get('title'),
+            category: formData.get('category'),
+            description: formData.get('description'),
+            salaryStr: formData.get('salary') + ' TMT',
+            salaryMin: parseInt(formData.get('salary')),
+            logoText: user.name[0],
+            status: 'pending'
+        };
+        addVacancy(newVac);
+        setIsModalOpen(false);
+        alert('Вакансия создана и отправлена на модерацию!');
     };
 
-    const sendForVerification = () => {
-        if (uploadedDocs.length === 7) {
-            setStatus('checking');
-            alert('Документы отправлены на премодерацию. Ожидайте ответа администратора в течение 3 дней.');
-        }
+    const handleDeleteCandidate = (id) => setCandidates(candidates.filter(c => c.id !== id));
+
+    const handleSortByExp = () => {
+        setCandidates([...candidates].sort((a, b) => b.expMonths - a.expMonths));
     };
+
+    const handleSaveProfile = () => {
+        updateUserProfile({
+            about: companyData.about,
+            socials: companyData.website ? [companyData.website] : []
+        });
+        setIsEditing(false);
+    };
+
+    const progress = Math.round((uploadedDocs.length / MANDATORY_DOCS.length) * 100);
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 60px' }}>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 8px 0', color: '#131313' }}>Кабинет работодателя</h1>
-                    <p style={{ color: '#666', margin: 0, fontSize: '15px' }}>{user.name} • {user.email}</p>
+                    <h1 style={{ fontSize: '36px', fontWeight: 900, margin: '0 0 8px 0', color: '#000' }}>{user.name}</h1>
+                    <p style={{ margin: 0, fontSize: '16px', color: '#666', fontWeight: 700, backgroundColor: '#F3F4F6', display: 'inline-block', padding: '6px 16px', borderRadius: '12px' }}>
+                        Работодатель • {user.categories?.join(', ') || 'Отрасль не указана'}
+                    </p>
                 </div>
-                <button onClick={logout} style={{ padding: '12px 24px', backgroundColor: '#FEE2E2', color: '#EF4444', border: 'none', borderRadius: '16px', fontWeight: 700, cursor: 'pointer' }}>
-                    Выйти
+                <button onClick={() => setIsModalOpen(true)} style={{ padding: '16px 24px', backgroundColor: '#A50C20', color: '#FFF', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 16px rgba(165,12,32,0.2)', transition: 'transform 0.2s' }}>
+                    <Plus size={20} /> Создать вакансию
                 </button>
             </div>
 
-            {/* Баннер статуса */}
-            <div style={{
-                backgroundColor: status === 'pending' ? '#FEF2F2' : status === 'checking' ? '#FEF3C7' : '#D1FAE5',
-                border: `1px solid ${status === 'pending' ? '#FCA5A5' : status === 'checking' ? '#FCD34D' : '#6EE7B7'}`,
-                borderRadius: '24px', padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px'
-            }}>
-                {status === 'pending' && <AlertCircle size={32} color="#EF4444" />}
-                {status === 'checking' && <AlertCircle size={32} color="#D97706" />}
-                {status === 'verified' && <CheckCircle2 size={32} color="#059669" />}
-                <div>
-                    <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 800, color: '#131313' }}>
-                        {status === 'pending' && 'Требуется верификация компании'}
-                        {status === 'checking' && 'Документы на проверке'}
-                        {status === 'verified' && 'Компания верифицирована'}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#4B5563' }}>
-                        {status === 'pending' && 'Для публикации вакансий необходимо загрузить 7 обязательных юридических документов.'}
-                        {status === 'checking' && 'Наши модераторы проверяют ваши документы. Публикация вакансий временно недоступна.'}
-                        {status === 'verified' && 'У вас есть полный доступ к публикации вакансий и поиску сотрудников.'}
-                    </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+                <div style={{ backgroundColor: '#FFF', padding: '24px', borderRadius: '24px', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F9FAFB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={24} color="#000" /></div>
+                    <div><div style={{ fontSize: '28px', fontWeight: 900, color: '#000' }}>0</div><div style={{ fontSize: '13px', color: '#666', fontWeight: 700 }}>Активных вакансий</div></div>
+                </div>
+                <div style={{ backgroundColor: '#FFF', padding: '24px', borderRadius: '24px', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#FFF5F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendingUp size={24} color="#A50C20" /></div>
+                    <div><div style={{ fontSize: '28px', fontWeight: 900, color: '#000' }}>12</div><div style={{ fontSize: '13px', color: '#666', fontWeight: 700 }}>Новых откликов</div></div>
+                </div>
+                <div style={{ backgroundColor: '#FFF', padding: '24px', borderRadius: '24px', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={24} color="#16A34A" /></div>
+                    <div><div style={{ fontSize: '28px', fontWeight: 900, color: '#000' }}>340</div><div style={{ fontSize: '13px', color: '#666', fontWeight: 700 }}>Просмотров профиля</div></div>
+                </div>
+                <div style={{ backgroundColor: '#FFF', padding: '24px', borderRadius: '24px', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Search size={24} color="#2563EB" /></div>
+                    <div><div style={{ fontSize: '28px', fontWeight: 900, color: '#000' }}>{mockCandidates.length}</div><div style={{ fontSize: '13px', color: '#666', fontWeight: 700 }}>В базе кандидатов</div></div>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-
-                {/* Левая колонка: Документы */}
-                <div style={{ backgroundColor: '#FFF', borderRadius: '32px', padding: '32px', boxShadow: '0 12px 24px rgba(0,0,0,0.03)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: '#131313' }}>Юридические документы</h2>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: uploadedDocs.length === 7 ? '#10B981' : '#6B7280' }}>
-                            Загружено {uploadedDocs.length} из 7
-                        </span>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {MANDATORY_DOCS.map((doc, idx) => {
-                            const isUploaded = uploadedDocs.includes(doc);
-                            return (
-                                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #E5E7EB', borderRadius: '16px', backgroundColor: isUploaded ? '#F9FAFB' : '#FFF' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{ width: '40px', height: '40px', backgroundColor: isUploaded ? '#D1FAE5' : '#F3F4F6', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {isUploaded ? <CheckCircle2 size={20} color="#059669" /> : <FileText size={20} color="#9CA3AF" />}
-                                        </div>
-                                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#131313' }}>{doc}</span>
-                                    </div>
-                                    {!isUploaded && status === 'pending' ? (
-                                        <button onClick={() => handleUpload(doc)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#3B82F6', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>
-                                            <UploadCloud size={16} /> Загрузить
-                                        </button>
-                                    ) : isUploaded ? (
-                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#6B7280' }}>Загружено</span>
-                                    ) : null}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {status === 'pending' && (
-                        <button
-                            onClick={sendForVerification}
-                            disabled={uploadedDocs.length !== 7}
-                            style={{ width: '100%', marginTop: '24px', padding: '16px', backgroundColor: uploadedDocs.length === 7 ? '#131313' : '#F3F4F6', color: uploadedDocs.length === 7 ? '#FFF' : '#9CA3AF', border: 'none', borderRadius: '16px', fontSize: '16px', fontWeight: 700, cursor: uploadedDocs.length === 7 ? 'pointer' : 'not-allowed', transition: 'all 0.2s' }}
-                        >
-                            Отправить на проверку
-                        </button>
-                    )}
-                </div>
-
-                {/* Правая колонка: Вакансии */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                    <div style={{ backgroundColor: '#FFF', borderRadius: '32px', padding: '32px', boxShadow: '0 12px 24px rgba(0,0,0,0.03)' }}>
+                    <div style={{ backgroundColor: '#FFFFFF', borderRadius: '32px', padding: '40px', border: '1px solid #E5E7EB' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: '#131313' }}>Мои вакансии</h2>
-                            <button
-                                disabled={status !== 'verified'}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: status === 'verified' ? '#3B82F6' : '#F3F4F6', color: status === 'verified' ? '#FFF' : '#9CA3AF', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: status === 'verified' ? 'pointer' : 'not-allowed' }}
-                            >
-                                <Plus size={18} /> Создать
-                            </button>
+                            <h2 style={{ fontSize: '24px', fontWeight: 900, margin: 0, color: '#000' }}>Профиль компании</h2>
+                            <button onClick={() => setIsEditing(!isEditing)} style={{ background: '#F3F4F6', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}>{isEditing ? 'Закрыть' : 'Изменить'}</button>
                         </div>
+                        {isEditing ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <textarea value={companyData.about} onChange={e => setCompanyData({ ...companyData, about: e.target.value })} style={{ width: '100%', height: '100px', padding: '16px', borderRadius: '16px', border: '1px solid #E5E7EB', fontFamily: 'inherit' }} placeholder="О компании..." />
+                                <input type="text" value={companyData.website} onChange={e => setCompanyData({ ...companyData, website: e.target.value })} placeholder="Сайт" style={{ padding: '12px', borderRadius: '12px', border: '1px solid #E5E7EB' }} />
+                                <button onClick={handleSaveProfile} style={{ padding: '12px', backgroundColor: '#A50C20', color: '#FFF', borderRadius: '12px', border: 'none', cursor: 'pointer' }}>Сохранить</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <p style={{ margin: 0, fontSize: '15px', color: companyData.about ? '#333' : '#9CA3AF', lineHeight: '1.6' }}>{companyData.about || 'Нет описания'}</p>
+                                {companyData.website && <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#A50C20', fontWeight: 700 }}><Globe size={18} /> {companyData.website}</div>}
+                            </div>
+                        )}
+                    </div>
 
-                        <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#F9FAFB', borderRadius: '20px' }}>
-                            <p style={{ color: '#6B7280', margin: 0, fontSize: '14px', fontWeight: 500 }}>
-                                {status === 'verified' ? 'У вас пока нет активных вакансий. Создайте первую!' : 'Возможность создавать вакансии появится после проверки документов.'}
-                            </p>
+                    <div style={{ backgroundColor: '#FFFFFF', borderRadius: '32px', padding: '40px', border: '1px solid #E5E7EB' }}>
+                        <h3 style={{ marginBottom: '20px', fontWeight: 900 }}>Верификация ({progress}%)</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {MANDATORY_DOCS.map(doc => (
+                                <div key={doc} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#F9FAFB', borderRadius: '8px', fontSize: '14px' }}>
+                                    <span>{doc}</span>
+                                    <button onClick={() => setUploadedDocs([...uploadedDocs, doc])} style={{ border: 'none', background: 'none', color: '#A50C20', fontWeight: 800, cursor: 'pointer' }}>{uploadedDocs.includes(doc) ? 'Загружено' : 'Загрузить'}</button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
+                <div style={{ backgroundColor: '#FFFFFF', borderRadius: '32px', padding: '40px', border: '1px solid #E5E7EB' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '24px', fontWeight: 900 }}>Кандидаты</h2>
+                        <button onClick={handleSortByExp} style={{ padding: '8px 16px', borderRadius: '12px', border: '1px solid #E5E7EB', cursor: 'pointer', fontWeight: 800 }}>Сортировать по опыту</button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {candidates.map(c => (
+                            <div key={c.id} style={{ padding: '20px', border: '1px solid #E5E7EB', borderRadius: '20px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <img src={c.avatar} style={{ width: '50px', height: '50px', borderRadius: '12px' }} />
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 900 }}>{c.name}</div>
+                                    <div style={{ color: '#666', fontSize: '14px' }}>{c.role} • {c.exp}</div>
+                                </div>
+                                <button onClick={() => window.alert('Скачивание: ' + c.resumeUrl)} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><Download size={20} /></button>
+                                <button onClick={() => navigate('/messages')} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><Send size={20} /></button>
+                                <button onClick={() => handleDeleteCandidate(c.id)} style={{ padding: '8px', background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}><Trash2 size={20} /></button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
+
+            {isModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <form onSubmit={handleCreateVacancy} style={{ background: '#FFF', padding: '40px', borderRadius: '32px', width: '500px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h2 style={{ margin: 0 }}>Создать вакансию</h2>
+                        <input name="title" placeholder="Название вакансии" required style={{ padding: '12px', borderRadius: '12px', border: '1px solid #ccc' }} />
+                        <select name="category" style={{ padding: '12px', borderRadius: '12px' }}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select>
+                        <input name="salary" type="number" placeholder="Зарплата (TMT)" required style={{ padding: '12px', borderRadius: '12px' }} />
+                        <textarea name="description" placeholder="Полное описание" required style={{ padding: '12px', borderRadius: '12px', height: '100px', fontFamily: 'inherit' }} />
+                        <button type="submit" style={{ padding: '16px', background: '#A50C20', color: '#FFF', borderRadius: '16px', border: 'none', cursor: 'pointer' }}>Отправить на модерацию</button>
+                        <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Отмена</button>
+                    </form>
+                </div>
+            )}
         </div>
     );
 }

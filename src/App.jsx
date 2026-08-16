@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import VacancyDetails from './pages/VacancyDetails';
@@ -15,6 +16,7 @@ import AboutUs from './pages/AboutUs';
 import SettingsPage from './pages/SettingsPage';
 import { FilterProvider } from './context/FilterContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { VacancyProvider } from './context/VacancyContext';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user } = useContext(AuthContext);
@@ -26,51 +28,54 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 function App() {
   return (
     <AuthProvider>
-      <FilterProvider>
-        <BrowserRouter>
-          <div style={{ backgroundColor: '#F3F4F6', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
-            <Header />
-            <main>
-              <Routes>
-                {/* Публичные маршруты */}
-                <Route path="/" element={<Home />} />
-                <Route path="/vacancy/:id" element={<VacancyDetails />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/about" element={<AboutUs />} />
+      <VacancyProvider>
+        <FilterProvider>
+          <BrowserRouter>
+            <div style={{ backgroundColor: '#F9FAFB', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+              <Header />
 
-                {/* Защищенные общие маршруты */}
-                <Route
-                  path="/messages"
-                  element={<ProtectedRoute><Messages /></ProtectedRoute>}
-                />
-                <Route
-                  path="/settings"
-                  element={<ProtectedRoute><SettingsPage /></ProtectedRoute>}
-                />
+              <main style={{ flexGrow: 1 }}>
+                <Routes>
+                  {/* Публичные маршруты */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/vacancy/:id" element={<VacancyDetails />} />
+                  <Route path="/login" element={<Auth />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/about" element={<AboutUs />} />
 
-                {/* Ролевые дашборды */}
-                <Route
-                  path="/dashboard"
-                  element={<ProtectedRoute allowedRole="applicant"><ApplicantDashboard /></ProtectedRoute>}
-                />
-                <Route
-                  path="/dashboard/employer"
-                  element={<ProtectedRoute allowedRole="employer"><EmployerDashboard /></ProtectedRoute>}
-                />
-                <Route
-                  path="/dashboard/admin"
-                  element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>}
-                />
-              </Routes>
-            </main>
+                  {/* Защищенные общие маршруты */}
+                  <Route
+                    path="/messages"
+                    element={<ProtectedRoute><Messages /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/settings"
+                    element={<ProtectedRoute><SettingsPage /></ProtectedRoute>}
+                  />
 
-            {/* Метрики Vercel (не влияют на интерфейс) */}
-            <Analytics />
-            <SpeedInsights />
-          </div>
-        </BrowserRouter>
-      </FilterProvider>
+                  {/* Ролевые дашборды */}
+                  <Route
+                    path="/dashboard"
+                    element={<ProtectedRoute allowedRole="applicant"><ApplicantDashboard /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/dashboard/employer"
+                    element={<ProtectedRoute allowedRole="employer"><EmployerDashboard /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/dashboard/admin"
+                    element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>}
+                  />
+                </Routes>
+              </main>
+
+              <Footer />
+              <Analytics />
+              <SpeedInsights />
+            </div>
+          </BrowserRouter>
+        </FilterProvider>
+      </VacancyProvider>
     </AuthProvider>
   );
 }
